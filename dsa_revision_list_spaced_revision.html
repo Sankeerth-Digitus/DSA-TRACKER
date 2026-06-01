@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DSA Revision List</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; padding: 20px; min-height: 100vh; }
+
+  h1 { text-align: center; font-size: 24px; color: #a78bfa; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 20px; }
+
+  .top-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat { background: #1e1e2e; border-radius: 10px; padding: 12px; text-align: center; }
+  .stat .num { font-size: 24px; font-weight: bold; }
+  .stat .lbl { font-size: 11px; color: #888; margin-top: 2px; }
+  .s-all .num { color: #a78bfa; }
+  .s-easy .num { color: #34d399; }
+  .s-med .num { color: #fbbf24; }
+  .s-hard .num { color: #f87171; }
+
+  .focus-note {
+    background: #2a1f00; border: 1px solid #fbbf24; border-radius: 10px;
+    padding: 10px 16px; font-size: 13px; color: #fbbf24; margin-bottom: 20px;
+  }
+
+  .add-box {
+    background: #1e1e2e; border-radius: 12px; padding: 16px; margin-bottom: 20px;
+  }
+  .add-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .add-row input, .add-row select {
+    flex: 1; min-width: 120px; font-size: 14px; padding: 9px 12px;
+    background: #2d2d44; border: 1px solid #3d3d5c; border-radius: 8px;
+    color: #e0e0e0; outline: none;
+  }
+  .add-row input:focus, .add-row select:focus { border-color: #a78bfa; }
+  .add-row select { flex: 0 0 200px; }
+  .add-btn {
+    padding: 9px 18px; font-size: 14px; font-weight: bold;
+    background: #a78bfa; border: none; border-radius: 8px;
+    color: #0f0f1a; cursor: pointer; white-space: nowrap;
+  }
+  .add-btn:hover { background: #c4b0ff; }
+
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .topic-tag {
+    font-size: 12px; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+    border: 1px solid #3d3d5c; color: #888; background: #2d2d44; transition: all 0.15s;
+  }
+  .topic-tag.active-tag { background: #3b2d6e; color: #a78bfa; border-color: #a78bfa; }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filt-btn {
+    font-size: 13px; padding: 6px 16px; border-radius: 20px; cursor: pointer;
+    border: 1px solid #3d3d5c; background: #1e1e2e; color: #888;
+  }
+  .filt-all.active { border-color: #a78bfa; color: #a78bfa; background: #2a1e4e; }
+  .filt-easy.active { border-color: #34d399; color: #34d399; background: #0a2e1e; }
+  .filt-med.active { border-color: #fbbf24; color: #fbbf24; background: #2a1e00; }
+  .filt-hard.active { border-color: #f87171; color: #f87171; background: #2e0a0a; }
+
+  .section-title { font-size: 13px; font-weight: bold; color: #888; margin: 16px 0 8px; letter-spacing: 0.3px; }
+
+  .prob-card {
+    background: #1e1e2e; border: 1px solid #2d2d44; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 8px; transition: border-color 0.15s;
+  }
+  .prob-card:hover { border-color: #3d3d5c; }
+  .prob-card-top { display: flex; align-items: center; gap: 10px; }
+
+  .diff-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-easy { background: #34d399; }
+  .dot-med { background: #fbbf24; }
+  .dot-hard { background: #f87171; }
+
+  .prob-info { flex: 1; min-width: 0; }
+  .prob-name { font-size: 14px; font-weight: 600; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prob-meta { font-size: 12px; color: #888; margin-top: 2px; }
+
+  .diff-badge { font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+  .badge-easy { background: #0a2e1e; color: #34d399; }
+  .badge-med { background: #2a1e00; color: #fbbf24; }
+  .badge-hard { background: #2e0a0a; color: #f87171; }
+
+  .revise-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 8px;
+    border: 1px solid #3d3d5c; background: none; color: #888; cursor: pointer; flex-shrink: 0;
+  }
+  .revise-btn.revised { background: #0a2e1e; color: #34d399; border-color: #34d399; }
+
+  .del-btn {
+    font-size: 18px; color: #555; cursor: pointer; background: none;
+    border: none; padding: 0 4px; line-height: 1; flex-shrink: 0;
+  }
+  .del-btn:hover { color: #f87171; }
+
+  /* Spaced repetition panel */
+  .revision-schedule {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #16162a;
+    border-radius: 8px;
+    border-top: 1px solid #2d2d44;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .revision-schedule .sched-label {
+    font-size: 11px; color: #666; margin-right: 4px; white-space: nowrap;
+  }
+  .rev-chip {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    border: 1px solid #3d3d5c; cursor: pointer; transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .rev-chip .chip-day { color: #a78bfa; font-weight: bold; }
+  .rev-chip .chip-date { color: #888; }
+  .rev-chip.chip-done { background: #0a2e1e; border-color: #34d399; }
+  .rev-chip.chip-done .chip-day { color: #34d399; }
+  .rev-chip.chip-done .chip-date { color: #34d399; opacity: 0.7; }
+  .rev-chip.chip-overdue { border-color: #f87171; }
+  .rev-chip.chip-overdue .chip-day { color: #f87171; }
+  .rev-chip.chip-overdue .chip-date { color: #f87171; opacity: 0.7; }
+  .rev-chip.chip-upcoming { border-color: #fbbf24; }
+  .rev-chip.chip-upcoming .chip-day { color: #fbbf24; }
+  .rev-chip.chip-upcoming .chip-date { color: #fbbf24; opacity: 0.7; }
+  .rev-chip:hover { background: #2d2d44; }
+  .rev-chip.chip-done:hover { background: #0d3d22; }
+
+  .check-icon { font-size: 10px; }
+
+  .empty { text-align: center; padding: 2.5rem; color: #555; font-size: 14px; }
+
+  @media (max-width: 500px) {
+    .top-stats { grid-template-columns: repeat(2, 1fr); }
+    .add-row select { flex: 0 0 100%; }
+  }
+</style>
+</head>
+<body>
+
+<h1>📋 DSA Revision List</h1>
+<p class="subtitle">Track problems by difficulty — focus on what challenges you most</p>
+
+<div class="top-stats">
+  <div class="stat s-all"><div class="num" id="cnt-all">0</div><div class="lbl">Total</div></div>
+  <div class="stat s-easy"><div class="num" id="cnt-easy">0</div><div class="lbl">Easy</div></div>
+  <div class="stat s-med"><div class="num" id="cnt-med">0</div><div class="lbl">Medium</div></div>
+  <div class="stat s-hard"><div class="num" id="cnt-hard">0</div><div class="lbl">Hard</div></div>
+</div>
+
+<div class="focus-note">
+  ⚡ Focus mostly on <strong>Medium + Hard</strong> problems — that's where your real growth happens.
+</div>
+
+<div class="add-box">
+  <div class="add-row">
+    <input id="prob-input" type="text" placeholder="Problem name (e.g. Two Sum)" />
+    <select id="diff-select">
+      <option value="Easy">🟢 Easy — solved it</option>
+      <option value="Medium" selected>🟡 Medium — needed hint</option>
+      <option value="Hard">🔴 Hard — couldn't solve</option>
+    </select>
+    <button class="add-btn" onclick="addProblem()">+ Add</button>
+  </div>
+  <div class="tag-row" id="tag-row"></div>
+</div>
+
+<div class="filter-row">
+  <button class="filt-btn filt-all active" onclick="setFilter('All')">All</button>
+  <button class="filt-btn filt-easy" onclick="setFilter('Easy')">🟢 Easy</button>
+  <button class="filt-btn filt-med" onclick="setFilter('Medium')">🟡 Medium</button>
+  <button class="filt-btn filt-hard" onclick="setFilter('Hard')">🔴 Hard</button>
+</div>
+
+<div id="list-container"></div>
+
+<script>
+const TOPICS = ["Arrays","Strings","Linked List","Stack","Queue","Trees","BST","Heaps","Graphs","DP","Greedy","Binary Search"];
+const REVISION_DAYS = [3, 7, 14, 30];
+
+let selectedTopic = "";
+let currentFilter = "All";
+let problems = JSON.parse(localStorage.getItem("rev_problems") || "[]");
+
+function save() { localStorage.setItem("rev_problems", JSON.stringify(problems)); }
+
+function addDays(dateStr, days) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+function formatDate(isoStr) {
+  const d = new Date(isoStr);
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+
+function chipStatus(isoStr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(isoStr); target.setHours(0,0,0,0);
+  const diff = (target - today) / (1000 * 60 * 60 * 24);
+  if (diff < 0) return "overdue";
+  if (diff <= 2) return "upcoming";
+  return "normal";
+}
+
+function renderTags() {
+  document.getElementById("tag-row").innerHTML = TOPICS.map(t =>
+    `<span class="topic-tag${selectedTopic===t?" active-tag":""}" onclick="selectTopic('${t}')">${t}</span>`
+  ).join("");
+}
+
+function selectTopic(t) {
+  selectedTopic = selectedTopic === t ? "" : t;
+  renderTags();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll(".filt-btn").forEach(b => b.classList.remove("active"));
+  const map = { All:"filt-all", Easy:"filt-easy", Medium:"filt-med", Hard:"filt-hard" };
+  document.querySelector("."+map[f]).classList.add("active");
+  renderList();
+}
+
+function addProblem() {
+  const name = document.getElementById("prob-input").value.trim();
+  const diff = document.getElementById("diff-select").value;
+  if (!name) return;
+  problems.unshift({
+    id: Date.now(), name, diff,
+    topic: selectedTopic,
+    revised: false,
+    revisedAt: null,
+    revisionsDone: [],
+    date: new Date().toLocaleDateString("en-IN")
+  });
+  save();
+  document.getElementById("prob-input").value = "";
+  selectedTopic = "";
+  renderTags();
+  renderList();
+}
+
+function deleteProblem(id) {
+  if (!confirm("Remove this problem?")) return;
+  problems = problems.filter(p => p.id !== id);
+  save(); renderList();
+}
+
+function toggleRevised(id) {
+  const p = problems.find(p => p.id === id);
+  if (!p) return;
+  p.revised = !p.revised;
+  if (p.revised) {
+    const today = new Date().toISOString().split("T")[0];
+    p.revisedAt = today;
+    if (!p.revisionsDone) p.revisionsDone = [];
+  } else {
+    p.revisedAt = null;
+    p.revisionsDone = [];
+  }
+  save(); renderList();
+}
+
+function toggleRevisionDay(probId, day) {
+  const p = problems.find(p => p.id === probId);
+  if (!p || !p.revisedAt) return;
+  if (!p.revisionsDone) p.revisionsDone = [];
+  const idx = p.revisionsDone.indexOf(day);
+  if (idx >= 0) {
+    p.revisionsDone.splice(idx, 1);
+  } else {
+    p.revisionsDone.push(day);
+  }
+  save(); renderList();
+}
+
+function buildScheduleHTML(p) {
+  if (!p.revised || !p.revisedAt) return "";
+
+  const chips = REVISION_DAYS.map(day => {
+    const targetDate = addDays(p.revisedAt, day);
+    const done = p.revisionsDone && p.revisionsDone.includes(day);
+    const status = done ? "done" : chipStatus(targetDate);
+    const chipClass = done ? "chip-done" : (status === "overdue" ? "chip-overdue" : status === "upcoming" ? "chip-upcoming" : "");
+    const icon = done ? `<span class="check-icon">✅</span>` : (status === "overdue" ? "⚠️" : status === "upcoming" ? "🔔" : "📅");
+    return `<span class="rev-chip ${chipClass}" onclick="toggleRevisionDay(${p.id}, ${day})" title="${done ? "Click to unmark" : "Click to mark done"}">
+      ${icon}
+      <span class="chip-day">Day ${day}</span>
+      <span class="chip-date">${formatDate(targetDate)}</span>
+    </span>`;
+  }).join("");
+
+  return `<div class="revision-schedule">
+    <span class="sched-label">📆 Revise again on:</span>
+    ${chips}
+  </div>`;
+}
+
+function updateStats() {
+  document.getElementById("cnt-all").textContent = problems.length;
+  document.getElementById("cnt-easy").textContent = problems.filter(p=>p.diff==="Easy").length;
+  document.getElementById("cnt-med").textContent = problems.filter(p=>p.diff==="Medium").length;
+  document.getElementById("cnt-hard").textContent = problems.filter(p=>p.diff==="Hard").length;
+}
+
+function renderList() {
+  const container = document.getElementById("list-container");
+  const filtered = currentFilter === "All" ? problems : problems.filter(p => p.diff === currentFilter);
+  const order = ["Hard","Medium","Easy"];
+  const labels = { Easy:"Easy — solved it", Medium:"Medium — needed hint", Hard:"Hard — couldn't solve" };
+  const icons = { Easy:"🟢", Medium:"🟡", Hard:"🔴" };
+  const dotClass = { Easy:"dot-easy", Medium:"dot-med", Hard:"dot-hard" };
+  const badgeClass = { Easy:"badge-easy", Medium:"badge-med", Hard:"badge-hard" };
+
+  let html = "";
+  order.forEach(d => {
+    const group = filtered.filter(p => p.diff === d);
+    if (!group.length) return;
+    html += `<div class="section-title">${icons[d]} ${labels[d]} (${group.length})</div>`;
+    group.forEach(p => {
+      html += `
+        <div class="prob-card">
+          <div class="prob-card-top">
+            <div class="diff-dot ${dotClass[p.diff]}"></div>
+            <div class="prob-info">
+              <div class="prob-name">${p.name}</div>
+              <div class="prob-meta">${p.topic ? p.topic + " · " : ""}${p.date}</div>
+            </div>
+            <button class="revise-btn${p.revised?" revised":""}" onclick="toggleRevised(${p.id})">
+              ${p.revised ? "✅ Revised" : "Mark revised"}
+            </button>
+            <span class="diff-badge ${badgeClass[p.diff]}">${d}</span>
+            <button class="del-btn" onclick="deleteProblem(${p.id})">×</button>
+          </div>
+          ${buildScheduleHTML(p)}
+        </div>`;
+    });
+  });
+
+  if (!filtered.length) {
+    html = `<div class="empty">No problems here yet.<br>Add your first one above! 💪</div>`;
+  }
+
+  container.innerHTML = html;
+  updateStats();
+}
+
+document.getElementById("prob-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") addProblem();
+});
+
+renderTags();
+renderList();
+</script>
+</body>
+</html>
