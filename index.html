@@ -177,16 +177,47 @@
 </div>
 
 <div id="list-container"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  const supabaseUrl = "https://mpltwpzncguiqcskuqle.supabase.co";
+const supabaseKey = "sb_publishable_8dj6WtPuJTmawRapg_BnLQ_WQ1msPDq";
+
+const supabaseClient = supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
 const TOPICS = ["Arrays","Strings","Linked List","Stack","Queue","Trees","BST","Heaps","Graphs","DP","Greedy","Binary Search"];
 const REVISION_DAYS = [3, 7, 14, 30];
 
 let selectedTopic = "";
 let currentFilter = "All";
-let problems = JSON.parse(localStorage.getItem("rev_problems") || "[]");
+let problems = [];
 
-function save() { localStorage.setItem("rev_problems", JSON.stringify(problems)); }
+async function loadProblems() {
+  const { data, error } = await supabaseClient
+    .from('dsa_problems')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+     console.log(data);
+  console.log(error);
+
+  if (!error) {
+    problems = data.map(p => ({
+      id: p.id,
+      name: p.problem_name,
+      diff: p.difficulty,
+      topic: p.topic,
+      revised: p.revised,
+      revisedAt: p.revised_at,
+      revisionsDone: p.revisions_done || [],
+      date: new Date(p.created_at).toLocaleDateString("en-IN")
+    }));
+
+    renderList();
+  }
+}
+
 
 function addDays(dateStr, days) {
   const d = new Date(dateStr);
@@ -227,29 +258,36 @@ function setFilter(f) {
   renderList();
 }
 
-function addProblem() {
+async function addProblem() {
   const name = document.getElementById("prob-input").value.trim();
   const diff = document.getElementById("diff-select").value;
   if (!name) return;
-  problems.unshift({
-    id: Date.now(), name, diff,
+  await supabaseClient
+  .from('dsa_problems')
+  .insert({
+    problem_name: name,
+    difficulty: diff,
     topic: selectedTopic,
     revised: false,
-    revisedAt: null,
-    revisionsDone: [],
-    date: new Date().toLocaleDateString("en-IN")
+    revisions_done: []
   });
-  save();
+
+await loadProblems();
   document.getElementById("prob-input").value = "";
   selectedTopic = "";
   renderTags();
   renderList();
 }
 
-function deleteProblem(id) {
+async function deleteProblem(id) {
   if (!confirm("Remove this problem?")) return;
-  problems = problems.filter(p => p.id !== id);
-  save(); renderList();
+  await supabaseClient
+  .from('dsa_problems')
+  .delete()
+  .eq('id', id);
+
+await loadProblems();
+ renderList();
 }
 
 function toggleRevised(id) {
@@ -264,7 +302,7 @@ function toggleRevised(id) {
     p.revisedAt = null;
     p.revisionsDone = [];
   }
-  save(); renderList();
+ renderList();
 }
 
 function toggleRevisionDay(probId, day) {
@@ -277,7 +315,7 @@ function toggleRevisionDay(probId, day) {
   } else {
     p.revisionsDone.push(day);
   }
-  save(); renderList();
+  renderList();
 }
 
 function buildScheduleHTML(p) {
@@ -354,9 +392,8 @@ function renderList() {
 document.getElementById("prob-input").addEventListener("keydown", e => {
   if (e.key === "Enter") addProblem();
 });
-
 renderTags();
-renderList();
+loadProblems();
 </script>
 </body>
 </html>
