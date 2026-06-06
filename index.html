@@ -290,32 +290,58 @@ await loadProblems();
  renderList();
 }
 
-function toggleRevised(id) {
-  const p = problems.find(p => p.id === id);
+async function toggleRevised(id) {
+  const p = problems.find(x => x.id === id);
   if (!p) return;
-  p.revised = !p.revised;
-  if (p.revised) {
-    const today = new Date().toISOString().split("T")[0];
-    p.revisedAt = today;
-    if (!p.revisionsDone) p.revisionsDone = [];
-  } else {
-    p.revisedAt = null;
-    p.revisionsDone = [];
+
+  const revised = !p.revised;
+
+  let revisedAt = null;
+  let revisionsDone = [];
+
+  if (revised) {
+    revisedAt = new Date().toISOString().split("T")[0];
   }
- renderList();
+
+  const { error } = await supabaseClient
+    .from("dsa_problems")
+    .update({
+      revised: revised,
+      revised_at: revisedAt,
+      revisions_done: revisionsDone
+    })
+    .eq("id", id);
+
+  if (!error) {
+    await loadProblems();
+  }
 }
 
-function toggleRevisionDay(probId, day) {
-  const p = problems.find(p => p.id === probId);
-  if (!p || !p.revisedAt) return;
-  if (!p.revisionsDone) p.revisionsDone = [];
-  const idx = p.revisionsDone.indexOf(day);
+async function toggleRevisionDay(probId, day) {
+  const p = problems.find(x => x.id === probId);
+
+  if (!p) return;
+
+  let revisionsDone = [...(p.revisionsDone || [])];
+
+  const idx = revisionsDone.indexOf(day);
+
   if (idx >= 0) {
-    p.revisionsDone.splice(idx, 1);
+    revisionsDone.splice(idx, 1);
   } else {
-    p.revisionsDone.push(day);
+    revisionsDone.push(day);
   }
-  renderList();
+
+  const { error } = await supabaseClient
+    .from("dsa_problems")
+    .update({
+      revisions_done: revisionsDone
+    })
+    .eq("id", probId);
+
+  if (!error) {
+    await loadProblems();
+  }
 }
 
 function buildScheduleHTML(p) {
